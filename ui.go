@@ -5,7 +5,12 @@ import (
 	"os"
 
 	"github.com/Sabooboo/pokecli/common"
+	"github.com/Sabooboo/pokecli/components/selector"
+
 	"github.com/Sabooboo/pokecli/pages/info"
+	"github.com/Sabooboo/pokecli/pages/list"
+	"github.com/Sabooboo/pokecli/pages/search"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -16,24 +21,31 @@ const (
 )
 
 type UI struct {
-	pages  []common.Component
-	active int
+	tabs  selector.Selector
+	pages []common.Component
 }
 
 func initialModel() UI {
 	return UI{
-		pages:  make([]common.Component, 1),
-		active: infoPage,
+		tabs:  selector.New([]string{"Info", "List", "Search"}, 2),
+		pages: make([]common.Component, 3),
 	}
 }
 
 func (ui UI) Init() tea.Cmd {
 	ui.pages[infoPage] = info.New()
+	ui.pages[listPage] = list.New()
+	ui.pages[searchPage] = search.New()
 	return nil
 }
 
 func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
+	m, cmd := ui.tabs.Update(msg)
+	ui.tabs = m.(selector.Selector)
+	if cmd != nil {
+		cmds = append(cmds, cmd)
+	}
 	for i, p := range ui.pages {
 		m, cmd := p.Update(msg)
 		ui.pages[i] = m.(common.Component)
@@ -53,7 +65,11 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (ui UI) View() string {
-	return ui.pages[ui.active].View()
+	var s string
+	s += ui.tabs.View() // Tab selector
+	s += "\n"
+	s += ui.pages[ui.tabs.Active].View() // Active tab
+	return s
 }
 
 func main() {
