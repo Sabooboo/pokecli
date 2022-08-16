@@ -57,7 +57,7 @@ func New() List {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 
-	model := List{loading: true, spinner: s}
+	model := List{loading: false, spinner: s} // TODO: Async loading
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
 	var items []list.Item
 	nationalPokedex, err := dex.GetPokedex(dex.National)
@@ -78,7 +78,6 @@ func New() List {
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 	model.list = l
-	model.loading = true
 	return model
 }
 
