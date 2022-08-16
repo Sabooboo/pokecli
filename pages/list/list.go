@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Sabooboo/pokecli/dex"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mtslzr/pokeapi-go"
 )
 
 const listHeight = 14
@@ -21,17 +22,13 @@ var (
 	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 )
 
-type item string
-
-func (i item) FilterValue() string { return string(i) }
-
 type itemDelegate struct{}
 
 func (d itemDelegate) Height() int                               { return 1 }
 func (d itemDelegate) Spacing() int                              { return 0 }
 func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(item)
+	i, ok := listItem.(dex.Pokemon)
 	if !ok {
 		return
 	}
@@ -49,18 +46,26 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type List struct {
-	list   list.Model
-	Choice string
+	list    list.Model
+	spinner spinner.Model
+	Choice  string
+	loading bool
+	err     error
 }
 
 func New() List {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+
+	model := List{loading: false, spinner: s} // TODO: Async loading
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
 	var items []list.Item
-	all, err := pokeapi.Pokedex("national")
+	nationalPokedex, err := dex.GetPokedex(dex.National)
 	if err != nil {
 		return List{}
 	}
-	for _, v := range all.PokemonEntries {
-		items = append(items, item(v.PokemonSpecies.Name))
+	for _, v := range nationalPokedex.Names {
+		items = append(items, v)
 	}
 
 	const defaultWidth = 40
@@ -72,17 +77,16 @@ func New() List {
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
-
-	list := List{list: l}
-
-	return list
+	model.list = l
+	return model
 }
 
 func (l List) Init() tea.Cmd {
-	return nil
+	return l.spinner.Tick
 }
 
 func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	cmds := make([]tea.Cmd, 0)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		l.list.SetWidth(msg.Width)
@@ -91,19 +95,33 @@ func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		l.Choice = ""
 		switch msg.String() {
 		case "enter":
-			item, ok := l.list.SelectedItem().(item)
+			item, ok := l.list.SelectedItem().(dex.Pokemon)
 			if ok {
 				l.Choice = string(item)
 			}
 			return l, nil
 		}
+	case List:
+		l = msg
+	case error:
+		l.err = msg
 	}
-
 	var cmd tea.Cmd
+	l.spinner, cmd = l.spinner.Update(msg)
+	cmds = append(cmds, cmd)
 	l.list, cmd = l.list.Update(msg)
-	return l, cmd
+	cmds = append(cmds, cmd)
+
+	return l, tea.Batch(cmds...)
 }
 
 func (l List) View() string {
+	if l.loading {
+		s := l.spinner.View()
+		return fmt.Sprintf("%s Loading... %s", s, s)
+	}
+	if l.err != nil {
+		return l.err.Error()
+	}
 	return "\n" + l.list.View()
 }
