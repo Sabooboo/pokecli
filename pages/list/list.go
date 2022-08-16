@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Sabooboo/pokecli/dex"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mtslzr/pokeapi-go"
 )
 
 const listHeight = 14
@@ -21,17 +21,13 @@ var (
 	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 )
 
-type item string
-
-func (i item) FilterValue() string { return string(i) }
-
 type itemDelegate struct{}
 
 func (d itemDelegate) Height() int                               { return 1 }
 func (d itemDelegate) Spacing() int                              { return 0 }
 func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(item)
+	i, ok := listItem.(dex.Pokemon)
 	if !ok {
 		return
 	}
@@ -55,12 +51,12 @@ type List struct {
 
 func New() List {
 	var items []list.Item
-	all, err := pokeapi.Pokedex("national")
+	nationalPokedex, err := dex.GetPokedex(dex.National)
 	if err != nil {
-		return List{}
+		return List{} // TODO: Involved error handling
 	}
-	for _, v := range all.PokemonEntries {
-		items = append(items, item(v.PokemonSpecies.Name))
+	for _, v := range nationalPokedex.Names {
+		items = append(items, v)
 	}
 
 	const defaultWidth = 40
@@ -91,7 +87,7 @@ func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		l.Choice = ""
 		switch msg.String() {
 		case "enter":
-			item, ok := l.list.SelectedItem().(item)
+			item, ok := l.list.SelectedItem().(dex.Pokemon)
 			if ok {
 				l.Choice = string(item)
 			}
