@@ -12,14 +12,17 @@ type Stats struct {
 }
 
 type Info struct {
-	active bool
-	name   string
-	desc   string
-	stats  Stats
+	name  string
+	desc  string
+	stats Stats
 }
 
 func New() Info {
-	return Info{active: false}
+	return Info{}
+}
+
+func (i Info) SetPokemon(name string) {
+	i.name = name
 }
 
 func (i Info) Init() tea.Cmd {
@@ -31,5 +34,5 @@ func (i Info) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (i Info) View() string {
-	return "Info stub"
+	return i.name
 }

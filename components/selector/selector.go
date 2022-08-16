@@ -31,7 +31,7 @@ var highlight = lipgloss.AdaptiveColor{Light: "#870000", Dark: "#AA0000"}
 var subtle = lipgloss.AdaptiveColor{Light: "#555555", Dark: "#aaaaaa"}
 
 var tabStyleInactive = lipgloss.NewStyle().
-	Width(10).
+	Width(40). // TODO: Make width automagically adjust on WindowSizeMsg
 	Align(lipgloss.Center).
 	Border(tabBorder).
 	BorderForeground(subtle)
@@ -46,7 +46,7 @@ type Selector struct {
 }
 
 func New(tabs []string, active int) Selector {
-	s := Selector{
+	s := &Selector{
 		List:   make([]string, 0),
 		Active: active,
 	}
@@ -54,7 +54,7 @@ func New(tabs []string, active int) Selector {
 		tab := v
 		s.List = append(s.List, tab)
 	}
-	return s
+	return *s
 }
 
 func (s Selector) Init() tea.Cmd {
@@ -65,16 +65,16 @@ func (s Selector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "[", "left":
-
+		case "[":
 			if s.Active > 0 {
 				s.Active--
 			}
-		case "]", "right":
+		case "]":
 			if s.Active < len(s.List)-1 {
 				s.Active++
 			}
 		}
+
 	}
 	return s, nil
 }

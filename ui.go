@@ -27,7 +27,7 @@ type UI struct {
 
 func initialModel() UI {
 	return UI{
-		tabs:  selector.New([]string{"Info", "List", "Search"}, 2),
+		tabs:  selector.New([]string{"Info", "Pokemon", "Search"}, 2),
 		pages: make([]common.Component, 3),
 	}
 }
@@ -41,14 +41,17 @@ func (ui UI) Init() tea.Cmd {
 
 func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
-	m, cmd := ui.tabs.Update(msg)
-	ui.tabs = m.(selector.Selector)
+	m, cmd := ui.tabs.Update(msg) // Send input to tab selector first
 	if cmd != nil {
 		cmds = append(cmds, cmd)
 	}
-	for i, p := range ui.pages {
-		m, cmd := p.Update(msg)
-		ui.pages[i] = m.(common.Component)
+	old := ui.tabs.Active
+	ui.tabs = m.(selector.Selector)
+	curr := ui.tabs.Active
+
+	if curr == old { // Tab is the same as last update
+		m, cmd := ui.pages[curr].Update(msg)
+		ui.pages[curr] = m.(common.Component)
 		if cmd != nil {
 			cmds = append(cmds, cmd)
 		}
@@ -57,7 +60,7 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return ui, tea.Quit
 		}
 	}
