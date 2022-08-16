@@ -55,6 +55,17 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if cmd != nil {
 			cmds = append(cmds, cmd)
 		}
+
+		// List selection handling
+		if curr == listPage {
+			selected := ui.pages[listPage].(list.List).Choice
+			if len(selected) > 0 { // If choice exists
+				info := ui.pages[infoPage].(info.Info)
+				info.Name = selected
+				ui.pages[infoPage] = info // Update model
+				ui.tabs.Active = infoPage
+			}
+		}
 	}
 
 	switch msg := msg.(type) {

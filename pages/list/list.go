@@ -50,7 +50,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 type List struct {
 	list   list.Model
-	choice string
+	Choice string
 }
 
 func New() List {
@@ -88,12 +88,12 @@ func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		l.list.SetWidth(msg.Width)
 		return l, nil
 	case tea.KeyMsg:
-		l.choice = ""
+		l.Choice = ""
 		switch msg.String() {
 		case "enter":
 			item, ok := l.list.SelectedItem().(item)
 			if ok {
-				l.choice = string(item)
+				l.Choice = string(item)
 			}
 			return l, nil
 		}

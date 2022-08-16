@@ -12,7 +12,7 @@ type Stats struct {
 }
 
 type Info struct {
-	name  string
+	Name  string
 	desc  string
 	stats Stats
 }
@@ -21,8 +21,8 @@ func New() Info {
 	return Info{}
 }
 
-func (i Info) SetPokemon(name string) {
-	i.name = name
+func (i *Info) SetPokemon(name string) {
+	i.Name = name
 }
 
 func (i Info) Init() tea.Cmd {
@@ -34,5 +34,5 @@ func (i Info) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (i Info) View() string {
-	return i.name
+	return i.Name
 }
