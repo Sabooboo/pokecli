@@ -21,10 +21,6 @@ func New() Info {
 	return Info{}
 }
 
-func (i *Info) SetPokemon(name string) {
-	i.Name = name
-}
-
 func (i Info) Init() tea.Cmd {
 	return nil
 }
