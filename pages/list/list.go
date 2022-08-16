@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sabooboo/pokecli/dex"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -45,15 +46,23 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type List struct {
-	list   list.Model
-	Choice string
+	list    list.Model
+	spinner spinner.Model
+	Choice  string
+	loading bool
+	err     error
 }
 
 func New() List {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+
+	model := List{loading: true, spinner: s}
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
 	var items []list.Item
 	nationalPokedex, err := dex.GetPokedex(dex.National)
 	if err != nil {
-		return List{} // TODO: Involved error handling
+		return List{}
 	}
 	for _, v := range nationalPokedex.Names {
 		items = append(items, v)
@@ -68,17 +77,17 @@ func New() List {
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
-
-	list := List{list: l}
-
-	return list
+	model.list = l
+	model.loading = true
+	return model
 }
 
 func (l List) Init() tea.Cmd {
-	return nil
+	return l.spinner.Tick
 }
 
 func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	cmds := make([]tea.Cmd, 0)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		l.list.SetWidth(msg.Width)
@@ -93,13 +102,27 @@ func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return l, nil
 		}
+	case List:
+		l = msg
+	case error:
+		l.err = msg
 	}
-
 	var cmd tea.Cmd
+	l.spinner, cmd = l.spinner.Update(msg)
+	cmds = append(cmds, cmd)
 	l.list, cmd = l.list.Update(msg)
-	return l, cmd
+	cmds = append(cmds, cmd)
+
+	return l, tea.Batch(cmds...)
 }
 
 func (l List) View() string {
+	if l.loading {
+		s := l.spinner.View()
+		return fmt.Sprintf("%s Loading... %s", s, s)
+	}
+	if l.err != nil {
+		return l.err.Error()
+	}
 	return "\n" + l.list.View()
 }
