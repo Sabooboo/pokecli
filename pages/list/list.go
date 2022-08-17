@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Sabooboo/pokecli/common"
 	"github.com/Sabooboo/pokecli/dex"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -19,7 +21,7 @@ var (
 	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("#ffffff"))
 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	// quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 )
 
 type itemDelegate struct{}
@@ -46,6 +48,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type List struct {
+	Common  common.Common
 	list    list.Model
 	spinner spinner.Model
 	Choice  string
@@ -74,11 +77,23 @@ func New() List {
 	l.Title = "Choose a Pokemon"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
+	l.Paginator.Type = paginator.Arabic
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 	model.list = l
 	return model
+}
+
+func (l List) SetSize(width, height int) common.Component {
+	l.Common.SetSize(width, height)
+	if height-10 < listHeight {
+		l.list.SetHeight(listHeight)
+	} else {
+		l.list.SetHeight(height - 10)
+	}
+
+	return l
 }
 
 func (l List) Init() tea.Cmd {

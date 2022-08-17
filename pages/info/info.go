@@ -1,6 +1,9 @@
 package info
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"github.com/Sabooboo/pokecli/common"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type Stats struct {
 	hp             int
@@ -12,13 +15,19 @@ type Stats struct {
 }
 
 type Info struct {
-	Name  string
-	desc  string
-	stats Stats
+	Common common.Common
+	Name   string
+	desc   string
+	stats  Stats
 }
 
 func New() Info {
 	return Info{}
+}
+
+func (i Info) SetSize(width, height int) common.Component {
+	i.Common.SetSize(width, height)
+	return i
 }
 
 func (i Info) Init() tea.Cmd {

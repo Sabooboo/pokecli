@@ -74,6 +74,11 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return ui, tea.Quit
 		}
+	case tea.WindowSizeMsg:
+		ui.tabs = ui.tabs.SetSize(msg.Width, msg.Height).(selector.Selector)
+		for i, v := range ui.pages {
+			ui.pages[i] = v.SetSize(msg.Width, msg.Height)
+		}
 	}
 	return ui, tea.Batch(cmds...)
 }

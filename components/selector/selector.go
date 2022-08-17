@@ -1,6 +1,7 @@
 package selector
 
 import (
+	"github.com/Sabooboo/pokecli/common"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -31,7 +32,6 @@ var highlight = lipgloss.AdaptiveColor{Light: "#870000", Dark: "#AA0000"}
 var subtle = lipgloss.AdaptiveColor{Light: "#555555", Dark: "#aaaaaa"}
 
 var tabStyleInactive = lipgloss.NewStyle().
-	Width(40). // TODO: Make width automagically adjust on WindowSizeMsg
 	Align(lipgloss.Center).
 	Border(tabBorder).
 	BorderForeground(subtle)
@@ -41,6 +41,7 @@ var tabStyleActive = tabStyleInactive.Copy().
 	BorderForeground(highlight)
 
 type Selector struct {
+	Common common.Common
 	List   []string
 	Active int
 }
@@ -55,6 +56,14 @@ func New(tabs []string, active int) Selector {
 		s.List = append(s.List, tab)
 	}
 	return *s
+}
+
+func (s Selector) SetSize(width, height int) common.Component {
+	s.Common.SetSize(width, height)
+	count := len(s.List)
+	tabStyleInactive.Width(width/count - 2)
+	tabStyleActive.Width(width/count - 2)
+	return s
 }
 
 func (s Selector) Init() tea.Cmd {
