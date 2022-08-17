@@ -7,7 +7,12 @@ import (
 	"fmt"
 
 	"github.com/Sabooboo/pokecli/dex"
+	e "github.com/Sabooboo/pokecli/dex/errors"
 	"github.com/spf13/cobra"
+)
+
+const (
+	cacheFlag = "cache"
 )
 
 // resetCmd represents the reset command
@@ -17,20 +22,25 @@ var resetCmd = &cobra.Command{
 	Long: `reset is used to delete pokecli data. If you are having issues with
 pokecli, resetting the persistent storage may help.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := cmd.PersistentFlags().GetInt("cache")
-		if err != nil {
-			id = 0
+		id, _ := cmd.PersistentFlags().GetInt(cacheFlag)
+		if id > -1 {
+			err := dex.InvalidateCache(dex.ID(id))
+			if err != e.FileNotFound {
+				fmt.Println(err)
+				return
+			}
+			s := fmt.Sprint(id)
+			if id == 0 {
+				s = ""
+			}
+			fmt.Printf("Succesfully reset cache %s\n", s)
+
 		}
-		err = dex.InvalidateCache(dex.ID(id))
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("Reset succesfully")
-		}
+
 	},
 }
 
 func init() {
-	resetCmd.PersistentFlags().Int("cache", 0, "Reset the Pokedex stored on the local device. 0 resets the whole cache.")
+	resetCmd.PersistentFlags().Int(cacheFlag, 0, "Reset the Pokedex stored on the local device. 0 resets the whole cache.")
 	rootCmd.AddCommand(resetCmd)
 }
