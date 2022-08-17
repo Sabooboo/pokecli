@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+pokecli
 
 # Json fs caches
 *.json
