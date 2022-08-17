@@ -1,7 +1,7 @@
 package main
 
-import "github.com/Sabooboo/pokecli/ui"
+import "github.com/Sabooboo/pokecli/cmd"
 
 func main() {
-	ui.Start()
+	cmd.Execute()
 }
