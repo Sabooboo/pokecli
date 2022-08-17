@@ -55,7 +55,7 @@ func GetPokedex(id ID) (Pokedex, error) {
 func getCache() (cache, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
-		return cache{}, err
+		file, _ = os.Create(fileName)
 	}
 	bytes, _ := io.ReadAll(file)
 	var dexes cache
