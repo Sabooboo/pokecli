@@ -1,15 +1,15 @@
-package main
+package ui
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/Sabooboo/pokecli/common"
-	"github.com/Sabooboo/pokecli/components/selector"
+	"github.com/Sabooboo/pokecli/ui/common"
+	"github.com/Sabooboo/pokecli/ui/components/selector"
 
-	"github.com/Sabooboo/pokecli/pages/info"
-	"github.com/Sabooboo/pokecli/pages/list"
-	"github.com/Sabooboo/pokecli/pages/search"
+	"github.com/Sabooboo/pokecli/ui/pages/info"
+	"github.com/Sabooboo/pokecli/ui/pages/list"
+	"github.com/Sabooboo/pokecli/ui/pages/search"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -91,8 +91,9 @@ func (ui UI) View() string {
 	return s
 }
 
-func main() {
-	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
+func Start() {
+	model := initialModel()
+	p := tea.NewProgram(model, tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Println("There was a problem running the program:", err)
 		os.Exit(1)

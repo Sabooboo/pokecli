@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Sabooboo/pokecli/common"
 	"github.com/Sabooboo/pokecli/dex"
+	"github.com/Sabooboo/pokecli/ui/common"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -63,7 +63,7 @@ func New() List {
 	model := List{loading: false, spinner: s} // TODO: Async loading
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
 	var items []list.Item
-	nationalPokedex, err := dex.GetPokedex(dex.National)
+	nationalPokedex, err := dex.GetPokedex(dex.National, true)
 	if err != nil {
 		return List{}
 	}
