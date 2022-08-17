@@ -16,11 +16,9 @@ var rootCmd = &cobra.Command{
 	Use:   "pokecli",
 	Short: "A terminal-based Pokedex app",
 	Long: `pokecli is a pokedex located entirely within the terminal.
-	In pokecli, you can look up information about any Pokemon via
-	PokeAPI. Just run the app from your terminal and use the built-in
-	interface to navigate the pokedex! Run with the flag -h for help.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+In pokecli, you can look up information about any Pokemon via
+PokeAPI. Just run the app from your terminal and use the built-in
+interface to navigate the pokedex! Run with the flag -h for help.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ui.Start()
 	},

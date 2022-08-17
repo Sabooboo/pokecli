@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Sabooboo/pokecli/dex"
 	"github.com/Sabooboo/pokecli/ui/common"
-	"github.com/Sabooboo/pokecli/ui/dex"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/paginator"
 	"github.com/charmbracelet/bubbles/spinner"

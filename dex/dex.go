@@ -2,13 +2,12 @@ package dex
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
-	e "github.com/Sabooboo/pokecli/ui/dex/errors"
+	e "github.com/Sabooboo/pokecli/dex/errors"
 
 	"github.com/mtslzr/pokeapi-go"
 )
@@ -45,7 +44,7 @@ func GetPokedex(id ID) (Pokedex, error) {
 
 	// Look in fs cache.
 	// TODO: Store pokedexes in memory on startup and reference those instead of fs cache.
-	pokedex, err = getPokedex(id)
+	pokedex, err = GetPokedexFromCache(id)
 
 	// If not in fs cache or cache is invalid
 	if err != nil || len(pokedex.Names) == 0 {
@@ -96,6 +95,19 @@ func InvalidateCache(id ID) error {
 	})
 }
 
+func GetPokedexFromCache(id ID) (Pokedex, error) {
+	dexes, err := getCache()
+	if err != nil {
+		return Pokedex{}, err
+	}
+	for _, v := range dexes.Dexes {
+		if v.Id == id {
+			return v, nil
+		}
+	}
+	return Pokedex{}, e.DexNotFound
+}
+
 // Retrieves the cache file from disk.
 func getCache() (cache, error) {
 	file, err := os.Open(FileName)
@@ -110,19 +122,6 @@ func getCache() (cache, error) {
 
 func delCache() error {
 	return os.Remove(FileName)
-}
-
-func getPokedex(id ID) (Pokedex, error) {
-	dexes, err := getCache()
-	if err != nil {
-		return Pokedex{}, err
-	}
-	for _, v := range dexes.Dexes {
-		if v.Id == id {
-			return v, nil
-		}
-	}
-	return Pokedex{}, errors.New("no pokedex found at id")
 }
 
 func updateCache(pkmn Pokedex) error {
