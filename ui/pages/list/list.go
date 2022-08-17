@@ -63,7 +63,7 @@ func New() List {
 	model := List{loading: false, spinner: s} // TODO: Async loading
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
 	var items []list.Item
-	nationalPokedex, err := dex.GetPokedex(dex.National)
+	nationalPokedex, err := dex.GetPokedex(dex.National, true)
 	if err != nil {
 		return List{}
 	}
