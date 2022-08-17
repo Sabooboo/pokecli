@@ -3,11 +3,17 @@ package search
 import (
 	"fmt"
 
+	"github.com/Sabooboo/pokecli/common"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
+var textStyle = lipgloss.NewStyle().
+	Align(lipgloss.Left)
+
 type Search struct {
+	Common    common.Common
 	textInput textinput.Model
 	err       error
 }
@@ -22,12 +28,18 @@ func New() Search {
 	ti.Placeholder = "Staraptor"
 	ti.Focus()
 	ti.CharLimit = 156
-	ti.Width = 120
 
 	return Search{
 		textInput: ti,
 		err:       nil,
 	}
+}
+
+func (s Search) SetSize(width, height int) common.Component {
+	s.Common.SetSize(width, height)
+	s.textInput.TextStyle.Width(width)
+	textStyle.Width(width)
+	return s
 }
 
 func (s Search) Init() tea.Cmd {
@@ -51,7 +63,7 @@ func (s Search) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s Search) View() string {
 	ti := s.textInput
 	return fmt.Sprintf(
-		"Search pokemon, items, and more\n\n%s\n",
+		textStyle.Render("Search pokemon, items, and more\n\n%s\n"),
 		ti.View(),
 	) + "\n"
 }
