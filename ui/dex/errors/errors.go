@@ -1,7 +1,7 @@
 package dex
 
 import (
-	"github.com/Sabooboo/pokecli/typdef"
+	"github.com/Sabooboo/pokecli/ui/typdef"
 )
 
 const (

@@ -3,7 +3,7 @@ package search
 import (
 	"fmt"
 
-	"github.com/Sabooboo/pokecli/common"
+	"github.com/Sabooboo/pokecli/ui/common"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"

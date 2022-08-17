@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	e "github.com/Sabooboo/pokecli/dex/errors"
+	e "github.com/Sabooboo/pokecli/ui/dex/errors"
 
 	"github.com/mtslzr/pokeapi-go"
 )
