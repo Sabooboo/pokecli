@@ -24,20 +24,21 @@ the Pokedex matching the specified id.`,
 			cmd.Help()
 			return
 		}
+		fmt.Println(id)
 
 		// Only use cache, default no
 		cacheOnly := false
-		cacheOnly, _ = cmd.PersistentFlags().GetBool("cache-only")
+		cacheOnly, _ = cmd.Flags().GetBool("cache-only")
 		fmt.Println(cacheOnly)
 
 		// override cache, default no
 		override := false
-		override, _ = cmd.PersistentFlags().GetBool("override")
+		override, _ = cmd.Flags().GetBool("override")
+		fmt.Println(override)
 
 		var pkdx dex.Pokedex
 
 		if !override {
-			fmt.Println("Override", override)
 			pkdx, err = dex.GetPokedex(dex.ID(id))
 			if err != nil {
 				fmt.Println(err)
@@ -48,8 +49,7 @@ the Pokedex matching the specified id.`,
 		}
 
 		pkdx, err = dex.GetPokedexFromCache(dex.ID(id))
-		if err != nil && cacheOnly {
-			fmt.Println("CacheOnly", cacheOnly)
+		if err != nil || !cacheOnly {
 			pkdx, err = dex.FetchPokedex(dex.ID(id))
 		}
 		if err != nil {
@@ -58,6 +58,8 @@ the Pokedex matching the specified id.`,
 		}
 
 		printPokedex(pkdx)
+		fmt.Println("Override", override)
+		fmt.Println("Cache Only", cacheOnly)
 	},
 }
 
