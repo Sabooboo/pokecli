@@ -25,7 +25,7 @@ pokecli, resetting the persistent storage may help.`,
 		id, _ := cmd.PersistentFlags().GetInt(cacheFlag)
 		if id > -1 {
 			err := dex.InvalidateCache(dex.ID(id))
-			if err != e.FileNotFound {
+			if err != nil && err != e.FileNotFound {
 				fmt.Println(err)
 				return
 			}
@@ -34,7 +34,6 @@ pokecli, resetting the persistent storage may help.`,
 				s = ""
 			}
 			fmt.Printf("Succesfully reset cache %s\n", s)
-
 		}
 
 	},
