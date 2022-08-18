@@ -38,13 +38,13 @@ const (
 )
 
 // Retrieves the pokedex matching id from the cache or from a webserver if not found.
-func GetPokedex(id ID, updateCache bool) (Pokedex, error) {
+func GetPokedex(id ID) (Pokedex, error) {
 	var err error
 	var pokedex Pokedex
 
 	// Look in fs cache.
 	// TODO: Store pokedexes in memory on startup and reference those instead of fs cache.
-	pokedex, err = GetPokedexFromCache(id, updateCache)
+	pokedex, err = GetPokedexFromCache(id, true)
 
 	// If not in fs cache or cache is invalid
 	if err != nil || len(pokedex.Names) == 0 {
@@ -55,12 +55,10 @@ func GetPokedex(id ID, updateCache bool) (Pokedex, error) {
 	}
 
 	// Update cache
-	if updateCache {
-		UpdateCache(pokedex)
-	}
+	err = UpdateCache(pokedex)
 
 	// Return
-	return pokedex, nil
+	return pokedex, err
 }
 
 // Retrieves the pokedex matching id from PokeAPI.
@@ -88,6 +86,7 @@ func InvalidateCache(id ID) error {
 		if err != nil {
 			return e.FileNotFound
 		}
+		return nil
 	}
 
 	return UpdateCache(Pokedex{
@@ -96,9 +95,9 @@ func InvalidateCache(id ID) error {
 	})
 }
 
-// Retrieves the pokedex from cache if exists. Optionally creates if not exists.
-func GetPokedexFromCache(id ID, createCache bool) (Pokedex, error) {
-	dexes, err := getCache(createCache)
+// Retrieves a Pokedex from the cache, optionally creating if not exists.
+func GetPokedexFromCache(id ID, create bool) (Pokedex, error) {
+	dexes, err := getCache(create)
 	if err != nil {
 		return Pokedex{}, err
 	}
@@ -110,23 +109,16 @@ func GetPokedexFromCache(id ID, createCache bool) (Pokedex, error) {
 	return Pokedex{}, e.DexNotFound
 }
 
-// Retrieves the cache file from disk. Optionally creates if not exists.
-func getCache(createCache bool) (cache, error) {
+// Retrieves the cache file from disk, optionally creating if not exists.
+func getCache(create bool) (cache, error) {
 	file, err := os.Open(FileName)
+	if err != nil && create {
+		file, _ = os.Create(FileName)
+	}
+	bytes, _ := io.ReadAll(file)
 	var dexes cache
-	if err != nil {
-		if createCache {
-			file, _ = os.Create(FileName)
-		} else {
-			return dexes, err
-		}
-	}
-	bytes, err := io.ReadAll(file)
-	if err != nil {
-		return dexes, err
-	}
-	err = json.Unmarshal(bytes, &dexes)
-	return dexes, err
+	json.Unmarshal(bytes, &dexes)
+	return dexes, nil
 }
 
 func delCache() error {
@@ -145,6 +137,7 @@ func UpdateCache(pkmn Pokedex) error {
 		// Look for matching entry
 		var i int
 		var v Pokedex
+
 		for i, v = range dexCache.Dexes {
 			if v.Id == pkmn.Id {
 				break

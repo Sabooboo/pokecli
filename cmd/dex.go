@@ -25,27 +25,39 @@ var dexCmd = &cobra.Command{
 	Long: `This command will retrieve a list of newline-separated Pokemon names from
 the Pokedex matching the specified id.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var pkdx dex.Pokedex
-		var err error
+		// id, default 1
+
 		id, cacheOnly, override := getFlags(cmd)
+
 		if id < 1 {
 			cmd.Help()
 			return
 		}
 
+		var pkdx dex.Pokedex
+		var err error
+
 		if cacheOnly {
-			pkdx, err = dex.GetPokedexFromCache(dex.ID(id), false)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
+			pkdx, err = dex.GetPokedexFromCache(id, false)
 		} else {
-			pkdx, err = dex.GetPokedex(dex.ID(id), override)
-			if err != nil {
-				fmt.Println(err)
-				return
+			pkdx, err = dex.GetPokedexFromCache(id, false)
+			// Redundant double fetch if in cache but this becomes very branchy very quick.
+			// TODO: Optimize this and avoid useless fs reads
+			if err != nil || override {
+				pkdx, err = dex.FetchPokedex(id)
 			}
 		}
+
+		// Return if any issues with getting the pokedex
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if override {
+			dex.UpdateCache(pkdx)
+		}
+
 		printPokedex(pkdx)
 	},
 }
@@ -55,8 +67,7 @@ func printPokedex(pkdx dex.Pokedex) {
 	for _, v := range pkdx.Names {
 		s.WriteString(fmt.Sprintf("%s\n", v))
 	}
-
-	fmt.Print(s.String())
+	fmt.Println(s.String())
 }
 
 func getFlags(cmd *cobra.Command) (dex.ID, bool, bool) {
