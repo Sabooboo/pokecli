@@ -61,7 +61,7 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := ui.pages[listPage].(list.List).Choice
 			if len(selected) > 0 { // If choice exists
 				info := ui.pages[infoPage].(info.Info)
-				info.Name = selected
+				info.SetPokemon(selected)
 				ui.pages[infoPage] = info // Update model
 				ui.tabs.Active = infoPage
 			}
