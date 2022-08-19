@@ -10,7 +10,6 @@ import (
 
 	"github.com/Sabooboo/pokecli/ui/pages/info"
 	"github.com/Sabooboo/pokecli/ui/pages/list"
-	"github.com/Sabooboo/pokecli/ui/pages/search"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -18,7 +17,6 @@ import (
 const (
 	infoPage = iota
 	listPage
-	searchPage
 )
 
 type TickMsg time.Time
@@ -38,16 +36,15 @@ type UI struct {
 }
 
 func initialModel() UI {
-	return UI{
-		tabs:  selector.New([]string{"Info", "Pokemon", "Search"}, 2),
-		pages: make([]common.Component, 3),
+	return UI{ // TODO: Add settings
+		tabs:  selector.New([]string{"Info", "Pokemon"}, 1),
+		pages: make([]common.Component, 2),
 	}
 }
 
 func (ui UI) Init() tea.Cmd {
 	ui.pages[infoPage] = info.New()
 	ui.pages[listPage] = list.New()
-	ui.pages[searchPage] = search.New()
 	return tickEvery()
 }
 
@@ -89,7 +86,7 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		ui.tabs = ui.tabs.SetSize(msg.Width, msg.Height).(selector.Selector)
 		for i, v := range ui.pages {
-			ui.pages[i] = v.SetSize(msg.Width, msg.Height)
+			ui.pages[i] = v.SetSize(msg.Width-2, msg.Height)
 		}
 	}
 	return ui, tea.Batch(cmds...)

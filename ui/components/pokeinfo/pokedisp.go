@@ -28,8 +28,10 @@ func New(pkmn typdef.PokeResult) Display {
 	return d
 }
 
-func (d Display) SetSize(width, height int) {
+func (d Display) SetSize(width, height int) common.Component {
 	d.Common.SetSize(width, height)
+	d.metaData = d.metaData.SetSize(width/2, height).(meta.Data)
+	return d
 }
 
 func (d Display) Init() tea.Cmd {
