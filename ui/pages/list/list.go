@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	listHeight   = 14
+	ListHeight   = 14
 	UpdateMonMsg = "updateMon"
 )
 
@@ -76,7 +76,7 @@ func New() List {
 
 	const defaultWidth = 40
 
-	l := list.New(items, itemDelegate{}, defaultWidth, listHeight)
+	l := list.New(items, itemDelegate{}, defaultWidth, ListHeight)
 	l.Title = "Choose a Pokemon"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
@@ -90,8 +90,8 @@ func New() List {
 
 func (l List) SetSize(width, height int) common.Component {
 	l.Common.SetSize(width, height)
-	if height-10 < listHeight {
-		l.list.SetHeight(listHeight)
+	if height-10 < ListHeight {
+		l.list.SetHeight(ListHeight)
 	} else {
 		l.list.SetHeight(height - 10)
 	}
