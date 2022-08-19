@@ -2,17 +2,14 @@ package info
 
 import (
 	"github.com/Sabooboo/pokecli/ui/common"
+	pokedisp "github.com/Sabooboo/pokecli/ui/components/pokeinfo"
+	"github.com/Sabooboo/pokecli/ui/typdef"
+	"github.com/Sabooboo/pokecli/util"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/mtslzr/pokeapi-go"
 	apistructs "github.com/mtslzr/pokeapi-go/structs"
 )
 
-var latestRes chan pokeResult = make(chan pokeResult, 1)
-
-type pokeResult struct {
-	Pokemon apistructs.Pokemon
-	Error   error
-}
+var latestRes chan typdef.PokeResult = make(chan typdef.PokeResult, 1)
 
 // type Stats struct {
 // 	hp             int
@@ -24,11 +21,11 @@ type pokeResult struct {
 // }
 
 type Info struct {
-	Common common.Common
-	Name   string
-	Error  error
-	pkmn   apistructs.Pokemon
-	ready  bool
+	Common     common.Common
+	pkmn       apistructs.Pokemon
+	components pokedisp.Display
+	Error      error
+	ready      bool
 }
 
 func New() Info {
@@ -36,17 +33,7 @@ func New() Info {
 }
 
 func (i Info) SetPokemon(name string) {
-	i.Name = name
-	go getPokemon(name)
-	i.ready = false
-}
-
-func getPokemon(id string) {
-	pkmn, err := pokeapi.Pokemon(id)
-	latestRes <- pokeResult{
-		Pokemon: pkmn,
-		Error:   err,
-	}
+	go util.GetPokemon(name, latestRes)
 }
 
 func (i Info) SetSize(width, height int) common.Component {
@@ -66,7 +53,7 @@ func (i Info) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			i.Error = res.Error
 			return i, nil
 		}
-		i.pkmn = res.Pokemon
+		i.components = pokedisp.New(res)
 		i.ready = true
 		return i, nil
 	}
@@ -75,7 +62,7 @@ func (i Info) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (i Info) View() string {
 	if i.ready {
-		return i.pkmn.Abilities[0].Ability.Name
+		return i.components.View()
 	}
 	return "false"
 }
