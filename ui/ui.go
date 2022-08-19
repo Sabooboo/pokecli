@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Sabooboo/pokecli/ui/common"
 	"github.com/Sabooboo/pokecli/ui/components/selector"
@@ -20,6 +21,17 @@ const (
 	searchPage
 )
 
+type TickMsg time.Time
+
+// This function is called on Update repeatedly. Without this, things which load
+// asynchronously will not be updated in "real time", but instead on other updates
+// (key press, window resize on unix, scroll, &c). This returns the current time.
+func tickEvery() tea.Cmd {
+	return tea.Every(time.Second/5, func(t time.Time) tea.Msg {
+		return TickMsg(t)
+	})
+}
+
 type UI struct {
 	tabs  selector.Selector
 	pages []common.Component
@@ -36,7 +48,7 @@ func (ui UI) Init() tea.Cmd {
 	ui.pages[infoPage] = info.New()
 	ui.pages[listPage] = list.New()
 	ui.pages[searchPage] = search.New()
-	return nil
+	return tickEvery()
 }
 
 func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -53,22 +65,22 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m, cmd := ui.pages[curr].Update(msg)
 		ui.pages[curr] = m.(common.Component)
 		if cmd != nil {
-			cmds = append(cmds, cmd)
-		}
-
-		// List selection handling
-		if curr == listPage {
-			selected := ui.pages[listPage].(list.List).Choice
-			if len(selected) > 0 { // If choice exists
+			if cmd() == list.UpdateMonMsg {
 				info := ui.pages[infoPage].(info.Info)
+				selected := ui.pages[listPage].(list.List).Choice
 				info.SetPokemon(selected)
 				ui.pages[infoPage] = info // Update model
 				ui.tabs.Active = infoPage
+			} else {
+				cmds = append(cmds, cmd)
 			}
+
 		}
 	}
 
 	switch msg := msg.(type) {
+	case TickMsg:
+		return ui, tickEvery()
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":

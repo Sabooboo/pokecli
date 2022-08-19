@@ -13,7 +13,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const listHeight = 14
+const (
+	listHeight   = 14
+	UpdateMonMsg = "updateMon"
+)
 
 var (
 	titleStyle        = lipgloss.NewStyle().MarginLeft(2)
@@ -102,6 +105,7 @@ func (l List) Init() tea.Cmd {
 
 func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds := make([]tea.Cmd, 0)
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		l.list.SetWidth(msg.Width)
@@ -113,6 +117,9 @@ func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			item, ok := l.list.SelectedItem().(dex.Pokemon)
 			if ok {
 				l.Choice = string(item)
+				return l, func() tea.Msg {
+					return UpdateMonMsg
+				}
 			}
 			return l, nil
 		}
