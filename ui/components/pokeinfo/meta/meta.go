@@ -21,6 +21,8 @@ var (
 
 	TextStyle = TitleStyle.Copy().Border(lipgloss.NormalBorder())
 
+	SubTextStyle = TitleStyle.Copy().Italic(true)
+
 	TypeStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "#000000", Dark: "#ffffff"}).
 			Padding(0, 1)
@@ -28,6 +30,7 @@ var (
 )
 
 type ability struct {
+	name     string
 	desc     string
 	isHidden bool
 }
@@ -68,6 +71,7 @@ func New(info typdef.PokeResult) Data {
 	abilities := make([]ability, 0)
 	for _, v := range info.Abilities {
 		a := ability{
+			name:     v.Info.Name,
 			isHidden: v.IsHidden,
 		}
 
@@ -119,7 +123,29 @@ func (d Data) View() string {
 		types = append(types, TypeStyles[i].Render(v.Name))
 	}
 
-	joined := lipgloss.JoinVertical(lipgloss.Left, top, strings.Join(types, " "), desc)
+	abilities := make([]string, 0)
+	for _, v := range d.abilities {
+		hiddenFormat := ""
+		if v.isHidden {
+			hiddenFormat = SubtitleStyle.Render("(hidden)")
+		}
+		top := lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			TitleStyle.Render(v.name),
+			" ",
+			hiddenFormat,
+		)
+		format := lipgloss.JoinVertical(lipgloss.Left, top, SubTextStyle.Render(v.desc))
+		abilities = append(abilities, format)
+	}
+
+	joined := lipgloss.JoinVertical(
+		lipgloss.Left,
+		top,
+		strings.Join(types, " "),
+		desc+"\n",
+		strings.Join(abilities, "\n\n"),
+	)
 
 	return joined
 }
