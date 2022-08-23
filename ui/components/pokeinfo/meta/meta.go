@@ -8,6 +8,7 @@ import (
 	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/Sabooboo/pokecli/ui/typdef/lang"
 	"github.com/Sabooboo/pokecli/ui/typdef/typecolor"
+	"github.com/Sabooboo/pokecli/util"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	apistructs "github.com/mtslzr/pokeapi-go/structs"
@@ -19,9 +20,9 @@ var (
 	SubtitleStyle = TitleStyle.Copy().
 			Foreground(lipgloss.Color("#111111"))
 
-	TextStyle = TitleStyle.Copy().Border(lipgloss.NormalBorder())
+	DescStyle = TitleStyle.Copy().Border(lipgloss.NormalBorder())
 
-	SubTextStyle = TitleStyle.Copy().Italic(true)
+	SubTextStyle = SubtitleStyle.Copy().Italic(true)
 
 	TypeStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "#000000", Dark: "#ffffff"}).
@@ -93,7 +94,7 @@ func (d Data) SetSize(width, height int) common.Component {
 	d.Common.SetSize(width, height)
 	TitleStyle.Width(width)
 	SubtitleStyle.Width(width)
-	TextStyle.Width(width)
+	DescStyle.Width(width)
 	return d
 }
 
@@ -106,17 +107,10 @@ func (d Data) Update(tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (d Data) View() string {
-	// Works as of now
-
-	// s.WriteString(fmt.Sprint(d.abilities, "\n")) // Abilities is nil
-	// s.WriteString(fmt.Sprint(d.types[0].Name, typecolor.Get(typecolor.Name(d.types[0].Name)), "\n"))
-	// s.WriteString(fmt.Sprint(d.desc, "\n"))
-	// return s.String()
-
 	name := TitleStyle.Render(d.name)
 	entry := SubtitleStyle.Render(fmt.Sprint("#", d.entry))
 	top := lipgloss.JoinHorizontal(lipgloss.Left, name, " ", entry)
-	desc := TextStyle.Render(d.desc)
+	desc := DescStyle.Render(d.desc)
 
 	types := make([]string, 0, 2)
 	for i, v := range d.types {
@@ -127,15 +121,15 @@ func (d Data) View() string {
 	for _, v := range d.abilities {
 		hiddenFormat := ""
 		if v.isHidden {
-			hiddenFormat = SubtitleStyle.Render("(hidden)")
+			hiddenFormat = SubTextStyle.Render("(hidden)")
 		}
 		top := lipgloss.JoinHorizontal(
 			lipgloss.Left,
-			TitleStyle.Render(v.name),
+			TitleStyle.Render(util.Title(v.name)),
 			" ",
 			hiddenFormat,
 		)
-		format := lipgloss.JoinVertical(lipgloss.Left, top, SubTextStyle.Render(v.desc))
+		format := lipgloss.JoinVertical(lipgloss.Left, top, TitleStyle.Render(v.desc))
 		abilities = append(abilities, format)
 	}
 
