@@ -1,11 +1,14 @@
 package util
 
 import (
+	"image/png"
+	"net/http"
 	"strings"
 
 	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/mtslzr/pokeapi-go"
 	apistructs "github.com/mtslzr/pokeapi-go/structs"
+	imgascii "github.com/qeesung/image2ascii/convert"
 )
 
 func GetPokemon(id string, out chan<- typdef.PokeResult) {
@@ -40,6 +43,27 @@ func GetPokemon(id string, out chan<- typdef.PokeResult) {
 		Abilities: abilities,
 		Error:     leastNil(errA, errB), // Ensure that if there was any error, nil will not be returned.
 	}
+}
+
+// Fetches the image located at a URL and returns an ASCII representation.
+func URLToASCII(url string) string {
+	res, err := http.Get(url)
+	if err != nil {
+		return ""
+	}
+	defer res.Body.Close()
+
+	img, err := png.Decode(res.Body)
+
+	if err != nil {
+		return ""
+	}
+
+	convert := imgascii.NewImageConverter()
+
+	options := imgascii.DefaultOptions
+
+	return convert.Image2ASCIIString(img, &options)
 }
 
 func leastNil(errs ...error) error {
