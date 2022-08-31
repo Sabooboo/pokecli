@@ -28,6 +28,8 @@ var tabBorder = lipgloss.Border{
 	BottomRight: "─",
 }
 
+const SelectorHeight = 3
+
 var highlight = lipgloss.AdaptiveColor{Light: "#870000", Dark: "#AA0000"}
 var subtle = lipgloss.AdaptiveColor{Light: "#555555", Dark: "#aaaaaa"}
 
