@@ -5,8 +5,11 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/Sabooboo/pokecli/util"
+	"github.com/qeesung/image2ascii/convert"
 	"github.com/spf13/cobra"
 )
 
@@ -16,10 +19,12 @@ var imgCmd = &cobra.Command{
 	Short: "Prints the image located at a given URL",
 	// Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		url := args[0]
-		// Perform some sort of validation here -- I can't be asked right now in testing.
-
-		fmt.Println(util.URLToASCII(url))
+		name := args[0]
+		in := make(chan typdef.PokeResult)
+		go util.GetPokemon(strings.ToLower(name), in)
+		mon := <-in
+		img := util.ImageToASCII(mon.Image, &convert.DefaultOptions)
+		fmt.Println(img)
 	},
 }
 
