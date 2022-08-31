@@ -107,7 +107,7 @@ func (d Data) Update(tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (d Data) View() string {
-	name := TitleStyle.Render(d.name)
+	name := TitleStyle.Render(util.Title(d.name))
 	entry := SubtitleStyle.Render(fmt.Sprint("#", d.entry))
 	top := lipgloss.JoinHorizontal(lipgloss.Left, name, " ", entry)
 	desc := DescStyle.Render(d.desc)
