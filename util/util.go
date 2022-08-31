@@ -37,8 +37,7 @@ func GetPokemon(id string, out chan<- typdef.PokeResult) {
 		abilities = append(abilities, ability)
 	}
 
-	// TODO Fetch official artwork front-default dynamically. Need to find where that is if it is in the wrapper at all.
-	imgUrl := pkmn.Sprites.FrontDefault // "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/112.png"
+	imgUrl := pkmn.Sprites.FrontDefault
 	img, _ := URLToImage(imgUrl)
 	// TODO Error handling, or maybe not since img is nil in this case and it therefore will not display.
 
@@ -58,7 +57,7 @@ func URLToASCII(url string) string {
 	if err != nil {
 		return ""
 	}
-	return ImageToASCII(img, &imgascii.DefaultOptions)
+	return ImageToASCII(img, -1, -1, true)
 }
 
 func URLToImage(url string) (image.Image, error) {
@@ -76,9 +75,18 @@ func URLToImage(url string) (image.Image, error) {
 	return img, nil
 }
 
-func ImageToASCII(img image.Image, options *imgascii.Options) string {
+func ImageToASCII(img image.Image, width, height int, fit bool) string {
 	convert := imgascii.NewImageConverter()
-	return convert.Image2ASCIIString(img, options)
+	opt := imgascii.Options{
+		Ratio:           1,
+		FixedWidth:      width,
+		FixedHeight:     height,
+		FitScreen:       fit,
+		StretchedScreen: false,
+		Colored:         true,
+		Reversed:        false,
+	}
+	return convert.Image2ASCIIString(img, &opt)
 }
 
 func leastNil(errs ...error) error {

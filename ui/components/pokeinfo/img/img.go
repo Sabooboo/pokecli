@@ -10,28 +10,32 @@ import (
 	imgascii "github.com/qeesung/image2ascii/convert"
 )
 
+// var options = imgascii.Options{
+// 	FixedWidth:  -1,
+// 	FixedHeight: -1,
+// }
+
 type Image struct {
-	common common.Common
-	img    image.Image
-	ascii  string
+	common  common.Common
+	resizer imgascii.ResizeHandler
+	img     image.Image
+	ascii   string
 }
 
 func New(info typdef.PokeResult) Image {
 	dat := info.Image
 
 	i := Image{
-		img:   dat,
-		ascii: util.ImageToASCII(dat, &imgascii.DefaultOptions),
+		resizer: imgascii.NewResizeHandler(),
+		img:     dat,
+		ascii:   util.ImageToASCII(dat, -1, -1, true),
 	}
 	return i
 }
 
 func (i Image) SetSize(width, height int) common.Component {
 	i.common.SetSize(width, height)
-	// i.ascii = util.ImageToASCII(i.img, &imgascii.Options{
-	// 	FixedWidth:  width,
-	// 	FixedHeight: height,
-	// })
+	// i.ascii = util.ImageToASCII(i.img, width, height, false)
 	return i
 }
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/Sabooboo/pokecli/util"
-	"github.com/qeesung/image2ascii/convert"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +22,7 @@ var imgCmd = &cobra.Command{
 		in := make(chan typdef.PokeResult)
 		go util.GetPokemon(strings.ToLower(name), in)
 		mon := <-in
-		img := util.ImageToASCII(mon.Image, &convert.DefaultOptions)
+		img := util.ImageToASCII(mon.Image, -1, -1, true)
 		fmt.Println(img)
 	},
 }
