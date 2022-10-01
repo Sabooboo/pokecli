@@ -17,8 +17,7 @@ import (
 var (
 	TitleStyle = lipgloss.NewStyle()
 
-	SubtitleStyle = TitleStyle.Copy().
-			Foreground(lipgloss.Color("#111111"))
+	SubtitleStyle = TitleStyle.Copy()
 
 	DescStyle = TitleStyle.Copy().Border(lipgloss.NormalBorder())
 
@@ -107,7 +106,7 @@ func (d Data) Update(tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (d Data) View() string {
-	name := TitleStyle.Render(d.name)
+	name := TitleStyle.Render(util.Title(d.name))
 	entry := SubtitleStyle.Render(fmt.Sprint("#", d.entry))
 	top := lipgloss.JoinHorizontal(lipgloss.Left, name, " ", entry)
 	desc := DescStyle.Render(d.desc)
