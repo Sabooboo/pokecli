@@ -21,5 +21,8 @@ pokecli
 # Idea files
 /.idea
 
+# In-UI debug log
+debug.log
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
