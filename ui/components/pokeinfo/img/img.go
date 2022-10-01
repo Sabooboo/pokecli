@@ -16,26 +16,33 @@ import (
 // }
 
 type Image struct {
-	common  common.Common
+	Common  common.Common
 	resizer imgascii.ResizeHandler
 	img     image.Image
 	ascii   string
 }
 
-func New(info typdef.PokeResult) Image {
+func New(info typdef.PokeResult, width, height int) Image {
 	dat := info.Image
 
 	i := Image{
-		resizer: imgascii.NewResizeHandler(),
-		img:     dat,
-		ascii:   util.ImageToASCII(dat, -1, -1, true),
+		Common: common.Common{
+			Width:  width,
+			Height: height,
+		},
+		img:   dat,
+		ascii: util.ImageToASCII(dat, width, height, false),
 	}
 	return i
 }
 
 func (i Image) SetSize(width, height int) common.Component {
-	i.common.SetSize(width, height)
-	// i.ascii = util.ImageToASCII(i.img, width, height, false)
+	i.Common.SetSize(width, height)
+
+	// SetSize can be called before img is ever loaded.
+	if i.img != nil {
+		i.ascii = util.ImageToASCII(i.img, width, height, false)
+	}
 	return i
 }
 

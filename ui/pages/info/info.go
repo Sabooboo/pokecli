@@ -54,7 +54,7 @@ func (i Info) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			i.Error = res.Error
 			return i, nil
 		}
-		i.components = pokedisp.New(res)
+		i.components = pokedisp.New(res, i.Common.Width, i.Common.Height)
 		i.ready = true
 		return i, nil
 	}

@@ -17,8 +17,7 @@ import (
 var (
 	TitleStyle = lipgloss.NewStyle()
 
-	SubtitleStyle = TitleStyle.Copy().
-			Foreground(lipgloss.Color("#111111"))
+	SubtitleStyle = TitleStyle.Copy()
 
 	DescStyle = TitleStyle.Copy().Border(lipgloss.NormalBorder())
 
