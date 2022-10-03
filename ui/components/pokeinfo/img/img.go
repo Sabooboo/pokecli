@@ -1,13 +1,12 @@
 package img
 
 import (
-	"image"
-
 	"github.com/Sabooboo/pokecli/ui/common"
 	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/Sabooboo/pokecli/util"
 	tea "github.com/charmbracelet/bubbletea"
 	imgascii "github.com/qeesung/image2ascii/convert"
+	"image"
 )
 
 // var options = imgascii.Options{
@@ -24,6 +23,7 @@ type Image struct {
 
 func New(info typdef.PokeResult, width, height int) Image {
 	dat := info.Image
+	size := util.Min(width, height)
 
 	i := Image{
 		Common: common.Common{
@@ -31,7 +31,7 @@ func New(info typdef.PokeResult, width, height int) Image {
 			Height: height,
 		},
 		img:   dat,
-		ascii: util.ImageToASCII(dat, width, height, false),
+		ascii: util.ImageToASCII(dat, size, size, false),
 	}
 	return i
 }
@@ -41,7 +41,8 @@ func (i Image) SetSize(width, height int) common.Component {
 
 	// SetSize can be called before img is ever loaded.
 	if i.img != nil {
-		i.ascii = util.ImageToASCII(i.img, width, height, false)
+		size := util.Min(width, height)
+		i.ascii = util.ImageToASCII(i.img, size, size, false)
 	}
 	return i
 }
