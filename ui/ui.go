@@ -87,11 +87,11 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		width, height := msg.Width, msg.Height
-		size := util.Max(height, selector.Height)
+		selectorHeight := util.Min(height, selector.Height)
 
-		ui.tabs = ui.tabs.SetSize(width, size).(selector.Selector)
+		ui.tabs = ui.tabs.SetSize(width, selectorHeight).(selector.Selector)
 		for i, v := range ui.pages {
-			ui.pages[i] = v.SetSize(width-2, -selector.Height)
+			ui.pages[i] = v.SetSize(width-2, height-selectorHeight)
 		}
 	}
 	return ui, tea.Batch(cmds...)
