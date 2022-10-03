@@ -38,7 +38,7 @@ func (i Info) SetPokemon(name string) {
 
 func (i Info) SetSize(width, height int) common.Component {
 	i.Common.SetSize(width, height)
-	i.components.SetSize(width, height)
+	i.components = i.components.SetSize(width, height).(pokedisp.Display)
 	return i
 }
 

@@ -91,7 +91,7 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		ui.tabs = ui.tabs.SetSize(width, selectorHeight).(selector.Selector)
 		for i, v := range ui.pages {
-			ui.pages[i] = v.SetSize(width-2, height-selectorHeight)
+			ui.pages[i] = v.SetSize(width, height-selectorHeight)
 		}
 	}
 	return ui, tea.Batch(cmds...)
