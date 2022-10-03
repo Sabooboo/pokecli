@@ -3,6 +3,7 @@ package util
 import (
 	"image"
 	"image/png"
+	"math"
 	"net/http"
 	"strings"
 
@@ -51,7 +52,7 @@ func GetPokemon(id string, out chan<- typdef.PokeResult) {
 	}
 }
 
-// Fetches the image located at a URL and returns an ASCII representation.
+// URLToASCII fetches the image located at a URL and returns an ASCII representation.
 func URLToASCII(url string) string {
 	img, err := URLToImage(url)
 	if err != nil {
@@ -106,7 +107,7 @@ func Title(str string) string {
 	return strings.Join(s, " ")
 }
 
-// Returns a substring of str starting at a 0-based index and ending
+// Substring returns a substring of str starting at a 0-based index and ending
 // after a certain amount of characters. Negative numbers do not work.
 func Substring(str string, start, length int) string {
 	whole := []rune(str)
@@ -120,4 +121,12 @@ func Substring(str string, start, length int) string {
 	}
 
 	return string(whole[start : start+length])
+}
+
+func Min(a, b int) int {
+	return int(math.Min(float64(a), float64(b)))
+}
+
+func Max(a, b int) int {
+	return int(math.Max(float64(a), float64(b)))
 }
