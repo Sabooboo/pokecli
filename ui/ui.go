@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"math"
+	"github.com/Sabooboo/pokecli/util"
 	"os"
 	"time"
 
@@ -86,9 +86,12 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return ui, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		ui.tabs = ui.tabs.SetSize(msg.Width, int(math.Max(float64(msg.Height), float64(selector.Height)))).(selector.Selector)
+		width, height := msg.Width, msg.Height
+		size := util.Max(height, selector.Height)
+
+		ui.tabs = ui.tabs.SetSize(width, size).(selector.Selector)
 		for i, v := range ui.pages {
-			ui.pages[i] = v.SetSize(msg.Width-2, msg.Height-selector.Height)
+			ui.pages[i] = v.SetSize(width-2, -selector.Height)
 		}
 	}
 	return ui, tea.Batch(cmds...)
