@@ -14,6 +14,7 @@ import (
 )
 
 func GetPokemon(id string, out chan<- typdef.PokeResult) {
+	id = strings.ToLower(id)
 	pkmn, errA := pokeapi.Pokemon(id)
 	species, errB := pokeapi.PokemonSpecies(id)
 

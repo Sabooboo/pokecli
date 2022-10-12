@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/Sabooboo/pokecli/util"
@@ -20,7 +19,7 @@ var imgCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		in := make(chan typdef.PokeResult)
-		go util.GetPokemon(strings.ToLower(name), in)
+		go util.GetPokemon(name, in)
 		mon := <-in
 		img := util.ImageToASCII(mon.Image, -1, -1, true)
 		fmt.Println(img)
