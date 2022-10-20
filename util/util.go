@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/Sabooboo/pokecli/ui/typdef"
 	"github.com/mtslzr/pokeapi-go"
@@ -39,17 +40,54 @@ func GetPokemon(id string, out chan<- typdef.PokeResult) {
 		abilities = append(abilities, ability)
 	}
 
-	imgUrl := pkmn.Sprites.FrontDefault
-	img, _ := URLToImage(imgUrl)
-	// TODO Error handling, or maybe not since img is nil in this case and it therefore will not display.
-
-	out <- typdef.PokeResult{
+	result := typdef.PokeResult{
 		Pokemon:   pkmn,
 		Species:   species,
 		Types:     types,
 		Abilities: abilities,
-		Image:     img,
 		Error:     leastNil(errA, errB), // Ensure that if there was any error, nil will not be returned.
+	}
+
+	imgUrl := pkmn.Sprites.FrontDefault
+	shinyUrl := pkmn.Sprites.FrontShiny
+
+	var wg sync.WaitGroup
+
+	// Opted not to use channels since the request is multithreaded but still encapsulated here.
+	getImage := func(url string, isShiny bool) {
+		defer wg.Done()
+		img, err := URLToImage(url)
+
+		out := &result.Images.Normal
+		if isShiny {
+			out = &result.Images.Shiny
+		}
+		*out = typdef.PokeImg{
+			Img: img,
+			Err: err,
+		}
+	}
+
+	wg.Add(2)
+
+	go getImage(imgUrl, false)
+	go getImage(shinyUrl, true)
+
+	wg.Wait()
+
+	out <- result
+}
+
+func GetImage(id string, isShiny bool) typdef.PokeImg {
+	pkmn, errA := pokeapi.Pokemon(id)
+	url := pkmn.Sprites.FrontDefault
+	if isShiny {
+		url = pkmn.Sprites.FrontDefault
+	}
+	img, errB := URLToImage(url)
+	return typdef.PokeImg{
+		Img: img,
+		Err: leastNil(errA, errB),
 	}
 }
 

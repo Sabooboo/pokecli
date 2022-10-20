@@ -19,9 +19,10 @@ var imgCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 		in := make(chan typdef.PokeResult)
-		go util.GetPokemon(name, in)
+		go util.GetPokemon(name, in) // TODO Make lightweight util.GetImage to ease API calls
 		mon := <-in
-		img := util.ImageToASCII(mon.Image, -1, -1, true)
+		// TODO add support for --shiny flag
+		img := util.ImageToASCII(mon.Images.Normal.Img, -1, -1, true)
 		fmt.Println(img)
 	},
 }
