@@ -82,7 +82,7 @@ func GetImage(id string, isShiny bool) typdef.PokeImg {
 	pkmn, errA := pokeapi.Pokemon(id)
 	url := pkmn.Sprites.FrontDefault
 	if isShiny {
-		url = pkmn.Sprites.FrontDefault
+		url = pkmn.Sprites.FrontShiny
 	}
 	img, errB := URLToImage(url)
 	return typdef.PokeImg{
