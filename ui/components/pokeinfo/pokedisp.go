@@ -46,7 +46,9 @@ func (d Display) Init() tea.Cmd {
 	return nil
 }
 
-func (d Display) Update(tea.Msg) (tea.Model, tea.Cmd) {
+func (d Display) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	image, _ := d.image.Update(msg)
+	d.image = image.(img.Image)
 	return d, nil
 }
 

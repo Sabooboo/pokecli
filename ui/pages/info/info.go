@@ -58,6 +58,8 @@ func (i Info) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		i.ready = true
 		return i, nil
 	}
+	m, _ := i.components.Update(msg)
+	i.components = m.(pokedisp.Display)
 	return i, nil
 }
 
