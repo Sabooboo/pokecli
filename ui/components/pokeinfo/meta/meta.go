@@ -170,7 +170,7 @@ func (d Data) View() string {
 		TitleStyle.Render("Abilities:"),
 		strings.Join(abilities, "\n\n"),
 		"",
-		TitleStyle.Render("Damage Relations"),
+		TitleStyle.Render("Damage Relations:"),
 		formattedMatchups,
 	)
 
