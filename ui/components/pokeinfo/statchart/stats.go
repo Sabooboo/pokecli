@@ -3,6 +3,7 @@ package statchart
 import (
 	"github.com/Sabooboo/pokecli/ui/common"
 	"github.com/Sabooboo/pokecli/ui/typdef"
+	"github.com/Sabooboo/pokecli/util"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"strconv"
@@ -13,7 +14,7 @@ const (
 	maxStat = 255
 	ySep    = 30
 	block   = "███\n███"
-	gap     = "h  \n   "
+	gap     = "   \n   "
 )
 
 type Data struct {
@@ -23,17 +24,25 @@ type Data struct {
 }
 
 func New(stats typdef.Stats[int]) Data {
+	tallest := 0
 	createBar := func(stat int) []string {
 		bar := make([]string, 0, maxStat/ySep*2)
 		for i := 0; i < maxStat/ySep; i++ {
 			if i < stat/ySep {
+				tallest = util.Max(i, tallest)
 				bar = append(bar, block)
+			} else {
+				bar = append(bar, gap)
 			}
 		}
 		return bar
 	}
 
-	disp := typdef.Stats[[]string]{
+	elimWhitespace := func(bar []string) []string {
+		return util.Reverse(bar[0 : tallest+1])
+	}
+
+	bars := typdef.Stats[[]string]{
 		Health:         createBar(stats.Health),
 		Attack:         createBar(stats.Attack),
 		SpecialAttack:  createBar(stats.SpecialAttack),
@@ -44,7 +53,14 @@ func New(stats typdef.Stats[int]) Data {
 
 	data := Data{
 		stats: stats,
-		disp:  disp,
+		disp: typdef.Stats[[]string]{
+			Health:         elimWhitespace(bars.Health),
+			Attack:         elimWhitespace(bars.Attack),
+			SpecialAttack:  elimWhitespace(bars.SpecialAttack),
+			Defense:        elimWhitespace(bars.Defense),
+			SpecialDefense: elimWhitespace(bars.SpecialDefense),
+			Speed:          elimWhitespace(bars.Speed),
+		},
 	}
 	return data
 }
