@@ -28,6 +28,9 @@ var tabBorder = lipgloss.Border{
 	BottomRight: "─",
 }
 
+// Height is a magic number because the actual height is a mystery
+const Height = 4
+
 var highlight = lipgloss.AdaptiveColor{Light: "#870000", Dark: "#AA0000"}
 var subtle = lipgloss.AdaptiveColor{Light: "#555555", Dark: "#aaaaaa"}
 
