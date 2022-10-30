@@ -3,7 +3,6 @@ package util
 import (
 	"image"
 	"image/png"
-	"io"
 	"math"
 	"net/http"
 	"strings"
@@ -112,9 +111,9 @@ func URLToImage(url string) (image.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
-	}(res.Body)
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	img, err := png.Decode(res.Body)
 	if err != nil {
