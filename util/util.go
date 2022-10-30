@@ -40,11 +40,26 @@ func GetPokemon(id string, out chan<- typdef.PokeResult) {
 		abilities = append(abilities, ability)
 	}
 
+	stats := make(map[string]int)
+	for _, v := range pkmn.Stats {
+		stats[v.Stat.Name] = v.BaseStat
+	}
+
+	resultStats := typdef.Stats[int]{
+		Health:         stats[typdef.Health],
+		Attack:         stats[typdef.Attack],
+		SpecialAttack:  stats[typdef.SpecialAttack],
+		Defense:        stats[typdef.Defense],
+		SpecialDefense: stats[typdef.SpecialDefense],
+		Speed:          stats[typdef.Speed],
+	}
+
 	result := typdef.PokeResult{
 		Pokemon:   pkmn,
 		Species:   species,
 		Types:     types,
 		Abilities: abilities,
+		Stats:     resultStats,
 		Error:     leastNil(errA, errB), // Ensure that if there was any error, nil will not be returned.
 	}
 
@@ -168,4 +183,11 @@ func Min(a, b int) int {
 
 func Max(a, b int) int {
 	return int(math.Max(float64(a), float64(b)))
+}
+
+func Reverse[T any](a []T) []T {
+	for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
+		a[i], a[j] = a[j], a[i]
+	}
+	return a
 }

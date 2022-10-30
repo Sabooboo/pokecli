@@ -2,7 +2,9 @@ package meta
 
 import (
 	"fmt"
+	"github.com/Sabooboo/pokecli/ui/components/pokeinfo/statchart"
 	"github.com/Sabooboo/pokecli/ui/typdef/poketype"
+	"log"
 	"strings"
 
 	"github.com/Sabooboo/pokecli/ui/common"
@@ -42,6 +44,8 @@ type Data struct {
 	entry     int
 	types     []apistructs.Type
 	matchups  poketype.TypeMatchups
+	stats     typdef.Stats[int]
+	chart     common.Component
 	desc      string // apistructs.FlavorTextEntries
 	abilities []ability
 }
@@ -52,6 +56,8 @@ func New(info typdef.PokeResult) Data {
 		name:     info.Pokemon.Name,
 		entry:    info.Pokemon.ID,
 		types:    info.Types,
+		stats:    info.Stats,
+		chart:    statchart.New(info.Stats),
 		matchups: poketype.GetTypeMatchups(info.Types...),
 	}
 	for _, v := range info.Species.FlavorTextEntries {
@@ -79,6 +85,7 @@ func New(info typdef.PokeResult) Data {
 
 	d.abilities = abilities
 
+	log.Println(d.stats)
 	return d
 }
 
@@ -172,6 +179,8 @@ func (d Data) View() string {
 		"",
 		TitleStyle.Render("Damage Relations:"),
 		formattedMatchups,
+		"",
+		d.chart.View(),
 	)
 
 	return joined
