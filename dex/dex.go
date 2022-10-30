@@ -16,10 +16,9 @@ type ID int
 
 type Pokemon string
 
-// Pokemon implements list.Item.
 func (p Pokemon) FilterValue() string { return string(p) }
 
-// Pokedex with an ID and list of pokemon. Many of these may be stored in cache.
+// Pokedex with an ID and list of Pokémon. Many of these may be stored in cache.
 type Pokedex struct {
 	Id    ID        `json:"id"`
 	Names []Pokemon `json:"pokemon"`
@@ -37,13 +36,13 @@ const (
 	National ID = 1
 )
 
-// Retrieves the pokedex matching id from the cache or from a webserver if not found.
+// GetPokedex Retrieves the Pokedex matching id from the cache or from a webserver if not found.
 func GetPokedex(id ID) (Pokedex, error) {
 	var err error
 	var pokedex Pokedex
 
 	// Look in fs cache.
-	// TODO: Store pokedexes in memory on startup and reference those instead of fs cache.
+	// TODO: Store Pokedex in memory on startup and reference those instead of fs cache.
 	pokedex, err = GetPokedexFromCache(id, true)
 
 	// If not in fs cache or cache is invalid
@@ -61,7 +60,7 @@ func GetPokedex(id ID) (Pokedex, error) {
 	return pokedex, err
 }
 
-// Retrieves the pokedex matching id from PokeAPI.
+// FetchPokedex retrieves the Pokedex matching id from PokeAPI.
 // Note that this does not cache requests.
 // Use GetPokedex instead if you want to cache
 // requests in filesystem for later starts
@@ -77,7 +76,7 @@ func FetchPokedex(id ID) (Pokedex, error) {
 	return pokedex, nil
 }
 
-// Invalidates the data located in the persistant cache under id.
+// InvalidateCache invalidates the data located in the persistent cache under id.
 // If 0 is passed as the id, the whole cache is deleted.
 func InvalidateCache(id ID) error {
 	var err error
@@ -95,7 +94,7 @@ func InvalidateCache(id ID) error {
 	})
 }
 
-// Retrieves a Pokedex from the cache, optionally creating if not exists.
+// GetPokedexFromCache Retrieves a Pokedex from the cache, optionally creating if not exists.
 func GetPokedexFromCache(id ID, create bool) (Pokedex, error) {
 	dexes, err := getCache(create)
 	if err != nil {
@@ -106,7 +105,7 @@ func GetPokedexFromCache(id ID, create bool) (Pokedex, error) {
 			return v, nil
 		}
 	}
-	return Pokedex{}, e.DexNotFound
+	return Pokedex{}, e.NotFound
 }
 
 // Retrieves the cache file from disk, optionally creating if not exists.
@@ -117,8 +116,8 @@ func getCache(create bool) (cache, error) {
 	}
 	bytes, _ := io.ReadAll(file)
 	var dexes cache
-	json.Unmarshal(bytes, &dexes)
-	return dexes, nil
+	err = json.Unmarshal(bytes, &dexes)
+	return dexes, err
 }
 
 func delCache() error {

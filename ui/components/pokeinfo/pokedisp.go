@@ -9,12 +9,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Pokeinfo includes N components (width/height):
-// Image (square, top left): 0.5*width/0.5*height
-// Desc including the name, number, types, and dex entry (square, top right): 0.5*width/0.5*height
-// Stats represented as a bar chart (square, bottom left): 0.5*width/0.5*height
-// Something else in the bottom right?
-
 type Display struct {
 	Common   common.Common
 	pokemon  typdef.PokeResult

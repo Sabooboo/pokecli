@@ -38,7 +38,7 @@ func New(stats typdef.Stats[int]) Data {
 		return bar
 	}
 
-	elimWhitespace := func(bar []string) []string {
+	eliminateWhitespace := func(bar []string) []string {
 		return util.Reverse(bar[0 : tallest+1])
 	}
 
@@ -54,12 +54,12 @@ func New(stats typdef.Stats[int]) Data {
 	data := Data{
 		stats: stats,
 		disp: typdef.Stats[[]string]{
-			Health:         elimWhitespace(bars.Health),
-			Attack:         elimWhitespace(bars.Attack),
-			SpecialAttack:  elimWhitespace(bars.SpecialAttack),
-			Defense:        elimWhitespace(bars.Defense),
-			SpecialDefense: elimWhitespace(bars.SpecialDefense),
-			Speed:          elimWhitespace(bars.Speed),
+			Health:         eliminateWhitespace(bars.Health),
+			Attack:         eliminateWhitespace(bars.Attack),
+			SpecialAttack:  eliminateWhitespace(bars.SpecialAttack),
+			Defense:        eliminateWhitespace(bars.Defense),
+			SpecialDefense: eliminateWhitespace(bars.SpecialDefense),
+			Speed:          eliminateWhitespace(bars.Speed),
 		},
 	}
 	return data

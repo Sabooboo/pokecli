@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Sabooboo/pokecli/ui/components/pokeinfo/statchart"
 	"github.com/Sabooboo/pokecli/ui/typdef/poketype"
-	"log"
 	"strings"
 
 	"github.com/Sabooboo/pokecli/ui/common"
@@ -84,8 +83,6 @@ func New(info typdef.PokeResult) Data {
 	}
 
 	d.abilities = abilities
-
-	log.Println(d.stats)
 	return d
 }
 
