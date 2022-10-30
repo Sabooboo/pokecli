@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ListHeight   = 14
+	Height       = 14
 	UpdateMonMsg = "updateMon"
 )
 
@@ -24,14 +24,13 @@ var (
 	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("#ffffff"))
 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
 	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	// quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
 )
 
 type itemDelegate struct{}
 
-func (d itemDelegate) Height() int                               { return 1 }
-func (d itemDelegate) Spacing() int                              { return 0 }
-func (d itemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d itemDelegate) Height() int                         { return 1 }
+func (d itemDelegate) Spacing() int                        { return 0 }
+func (d itemDelegate) Update(tea.Msg, *list.Model) tea.Cmd { return nil }
 func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	i, ok := listItem.(dex.Pokemon)
 	if !ok {
@@ -47,7 +46,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		}
 	}
 
-	fmt.Fprint(w, fn(str))
+	_, _ = fmt.Fprint(w, fn(str))
 }
 
 type List struct {
@@ -76,7 +75,7 @@ func New() List {
 
 	const defaultWidth = 40
 
-	l := list.New(items, itemDelegate{}, defaultWidth, ListHeight)
+	l := list.New(items, itemDelegate{}, defaultWidth, Height)
 	l.Title = "Choose a Pokemon"
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
@@ -90,8 +89,8 @@ func New() List {
 
 func (l List) SetSize(width, height int) common.Component {
 	l.Common.SetSize(width, height)
-	if height-10 < ListHeight {
-		l.list.SetHeight(ListHeight)
+	if height-10 < Height {
+		l.list.SetHeight(Height)
 	} else {
 		l.list.SetHeight(height - 10)
 	}
@@ -124,6 +123,10 @@ func (l List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return l, nil
 		}
 	case List:
+		// Compiler warns that setting the receiver to a value won't affect
+		// the caller, but since tea.Model is always returned in Update, this
+		// warning is accounted for.
+		//goland:noinspection GoAssignmentToReceiver
 		l = msg
 	case error:
 		l.err = msg

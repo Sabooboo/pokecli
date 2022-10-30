@@ -1,6 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -30,7 +27,7 @@ the Pokedex matching the specified id.`,
 		id, cacheOnly, override := getFlags(cmd)
 
 		if id < 1 {
-			cmd.Help()
+			_ = cmd.Help()
 			return
 		}
 
@@ -48,14 +45,14 @@ the Pokedex matching the specified id.`,
 			}
 		}
 
-		// Return if any issues with getting the pokedex
+		// Return if any issues with getting the Pokédex
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
 		if override {
-			dex.UpdateCache(pkdx)
+			_ = dex.UpdateCache(pkdx)
 		}
 
 		printPokedex(pkdx)

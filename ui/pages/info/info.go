@@ -9,7 +9,7 @@ import (
 	apistructs "github.com/mtslzr/pokeapi-go/structs"
 )
 
-var latestRes chan typdef.PokeResult = make(chan typdef.PokeResult, 1)
+var latestRes = make(chan typdef.PokeResult, 1)
 
 // type Stats struct {
 // 	hp             int

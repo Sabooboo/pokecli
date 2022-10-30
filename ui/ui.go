@@ -65,10 +65,10 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ui.pages[curr] = m.(common.Component)
 		if cmd != nil {
 			if cmd() == list.UpdateMonMsg {
-				info := ui.pages[infoPage].(info.Info)
+				infoComponent := ui.pages[infoPage].(info.Info)
 				selected := ui.pages[listPage].(list.List).Choice
-				info.SetPokemon(selected)
-				ui.pages[infoPage] = info // Update model
+				infoComponent.SetPokemon(selected)
+				ui.pages[infoPage] = infoComponent // Update model
 				ui.tabs.Active = infoPage
 			} else {
 				cmds = append(cmds, cmd)

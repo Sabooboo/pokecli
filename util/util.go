@@ -3,6 +3,7 @@ package util
 import (
 	"image"
 	"image/png"
+	"io"
 	"math"
 	"net/http"
 	"strings"
@@ -106,21 +107,14 @@ func GetImage(id string, isShiny bool) typdef.PokeImg {
 	}
 }
 
-// URLToASCII fetches the image located at a URL and returns an ASCII representation.
-func URLToASCII(url string) string {
-	img, err := URLToImage(url)
-	if err != nil {
-		return ""
-	}
-	return ImageToASCII(img, -1, -1, true)
-}
-
 func URLToImage(url string) (image.Image, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(res.Body)
 
 	img, err := png.Decode(res.Body)
 	if err != nil {

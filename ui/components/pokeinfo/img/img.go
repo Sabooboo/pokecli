@@ -9,7 +9,7 @@ import (
 	"image"
 )
 
-var showShiny bool = false
+var showShiny = false
 
 type Image struct {
 	Common  common.Common
