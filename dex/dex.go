@@ -3,16 +3,11 @@ package dex
 import (
 	"encoding/json"
 	"fmt"
+	e "github.com/Sabooboo/pokecli/dex/errors"
+	"github.com/mtslzr/pokeapi-go"
 	"io"
 	"os"
-	"path/filepath"
-
-	e "github.com/Sabooboo/pokecli/dex/errors"
-
-	"github.com/mtslzr/pokeapi-go"
 )
-
-type ID int
 
 type Pokemon string
 
@@ -20,11 +15,13 @@ func (p Pokemon) FilterValue() string { return string(p) }
 
 // Pokedex with an ID and list of Pokémon. Many of these may be stored in cache.
 type Pokedex struct {
-	Id    ID        `json:"id"`
+	Id    int       `json:"id"`
 	Names []Pokemon `json:"pokemon"`
 }
 
-type cache struct {
+type Location uint8
+
+type Cache struct {
 	Dexes []Pokedex `json:"dexes"`
 }
 
@@ -33,70 +30,104 @@ const (
 )
 
 const (
-	National ID = 1
+	National int = 1
 )
 
-// GetPokedex Retrieves the Pokedex matching id from the cache or from a webserver if not found.
-func GetPokedex(id ID) (Pokedex, error) {
-	var err error
-	var pokedex Pokedex
+const (
+	Memory Location = 0
+	Disk   Location = 1
+	Web    Location = 2
+)
 
-	// Look in fs cache.
-	// TODO: Store Pokedex in memory on startup and reference those instead of fs cache.
-	pokedex, err = GetPokedexFromCache(id, true)
+var localCache = Cache{}
 
-	// If not in fs cache or cache is invalid
-	if err != nil || len(pokedex.Names) == 0 {
-		// pokeapi-go caches all requests in memory
-		// so local cache invalidation should not
-		// affect web requests.
-		pokedex, _ = FetchPokedex(id) // Todo: handle failure case
+// GetPokedex Retrieves the Pokedex matching id. This result is cached in
+// memory.
+func GetPokedex(id int) (Pokedex, error) {
+	var (
+		pkmn Pokedex
+		err  error
+	)
+	// Check if cache exists in ram
+	pkmn, err = GetPokedexFrom(Memory, id, true)
+	if err == nil {
+		return pkmn, nil
 	}
 
-	// Update cache
-	err = UpdateCache(pokedex)
+	// Check if cache exists on disk
+	pkmn, err = GetPokedexFrom(Disk, id, true)
+	if err == nil {
+		return pkmn, nil
+	}
 
-	// Return
-	return pokedex, err
+	// Fetch from internet
+	pkmn, err = GetPokedexFrom(Web, id, true)
+	if err == nil {
+		return pkmn, nil
+	}
+
+	// Failure case: Pokedex could not be found anywhere.
+	return Pokedex{}, err
 }
 
-// FetchPokedex retrieves the Pokedex matching id from PokeAPI.
-// Note that this does not cache requests.
-// Use GetPokedex instead if you want to cache
-// requests in filesystem for later starts
-func FetchPokedex(id ID) (Pokedex, error) {
-	pokedex := Pokedex{Id: id, Names: make([]Pokemon, 0)}
-	all, err := pokeapi.Pokedex(fmt.Sprint(id))
+// GetPokedexFrom retrieves the Pokedex matching id from the Location provided,
+// optionally caching the result. If there is an error retrieving the Pokedex,
+// the result will not be cached, and the error will be returned.
+func GetPokedexFrom(location Location, id int, cacheRes bool) (Pokedex, error) {
+	var (
+		pkmn Pokedex
+		err  error
+	)
+	switch location {
+	case Disk:
+		pkmn, err = getPokedexFromDisk(id)
+	case Memory:
+		pkmn, err = getPokedexFromMemory(id)
+	case Web:
+		pkmn, err = getPokedexFromPokeAPI(id)
+	}
 	if err != nil {
-		return Pokedex{}, e.FetchFailed
+		return pkmn, err
 	}
-	for _, v := range all.PokemonEntries {
-		pokedex.Names = append(pokedex.Names, Pokemon(v.PokemonSpecies.Name))
+
+	if cacheRes {
+		updateCache(pkmn)
 	}
-	return pokedex, nil
+	return pkmn, nil
 }
 
 // InvalidateCache invalidates the data located in the persistent cache under id.
-// If 0 is passed as the id, the whole cache is deleted.
-func InvalidateCache(id ID) error {
-	var err error
-	if id == 0 {
-		err = delCache()
-		if err != nil {
-			return e.FileNotFound
-		}
-		return nil
+// If 0 or lower is passed as the id, the whole cache is reset.
+func InvalidateCache(id int) {
+	if id <= 0 {
+		localCache = Cache{}
+		return
 	}
 
-	return UpdateCache(Pokedex{
+	updateCache(Pokedex{
 		Id:    id,
 		Names: make([]Pokemon, 0),
 	})
 }
 
-// GetPokedexFromCache Retrieves a Pokedex from the cache, optionally creating if not exists.
-func GetPokedexFromCache(id ID, create bool) (Pokedex, error) {
-	dexes, err := getCache(create)
+// Following 4 are a set of non-caching, request-only functions
+
+// getPokedexFromMemory returns the Pokedex matching id in the local Cache.
+// If the matching Pokedex could not be found, an error will be returned.
+func getPokedexFromMemory(id int) (Pokedex, error) {
+	for _, v := range localCache.Dexes {
+		if v.Id == id {
+			return v, nil
+		}
+	}
+	return Pokedex{}, e.IdNotFound
+}
+
+// getPokedexFromDisk returns the Pokedex matching id in the file matching
+// FileName. If the file is missing or malformed, or the Pokedex can not be
+// found, an error will be returned.
+func getPokedexFromDisk(id int) (Pokedex, error) {
+	dexes, err := GetCacheFromDisk(false)
 	if err != nil {
 		return Pokedex{}, err
 	}
@@ -105,59 +136,66 @@ func GetPokedexFromCache(id ID, create bool) (Pokedex, error) {
 			return v, nil
 		}
 	}
-	return Pokedex{}, e.NotFound
+	return Pokedex{}, e.IdNotFound
 }
 
-// Retrieves the cache file from disk, optionally creating if not exists.
-func getCache(create bool) (cache, error) {
-	file, err := os.Open(FileName)
-	if err != nil && create {
-		file, _ = os.Create(FileName)
+// getPokedexFromPokeAPI returns the Pokedex matching id from the PokéAPI.
+// If the request does not succeed, an error will be returned.
+func getPokedexFromPokeAPI(id int) (Pokedex, error) {
+	pokedex := Pokedex{Id: id, Names: make([]Pokemon, 0)}
+	all, err := pokeapi.Pokedex(fmt.Sprint(id))
+	if err != nil {
+		return Pokedex{}, err
+	}
+	for _, v := range all.PokemonEntries {
+		pokedex.Names = append(pokedex.Names, Pokemon(v.PokemonSpecies.Name))
+	}
+	return pokedex, nil
+}
+
+// GetCacheFromDisk Retrieves the cache located in the file matching FileName.
+// If the file is missing or malformed, an error will be returned, and the
+// result will not be cached.
+func GetCacheFromDisk(cacheRes bool) (Cache, error) {
+	file, pathErr := os.Open(FileName)
+	if pathErr != nil {
+		return Cache{}, pathErr
 	}
 	bytes, _ := io.ReadAll(file)
-	var dexes cache
-	err = json.Unmarshal(bytes, &dexes)
+	var dexes Cache
+	err := json.Unmarshal(bytes, &dexes)
+	if err == nil && cacheRes {
+		localCache = dexes
+	}
 	return dexes, err
 }
 
-func delCache() error {
-	return os.Remove(FileName)
-}
-
-func UpdateCache(pkmn Pokedex) error {
-	// Get cache
-	dexCache, err := getCache(true)
-	if err != nil {
-		return err
-	}
-
-	// Change entry where id = pkmn.id, or create if not exists
-	{
-		// Look for matching entry
-		var i int
-		var v Pokedex
-
-		for i, v = range dexCache.Dexes {
-			if v.Id == pkmn.Id {
-				break
-			}
-		}
-
-		// If matching entry
-		if v.Id == pkmn.Id {
-			dexCache.Dexes[i] = pkmn
-		} else {
-			dexCache.Dexes = append(dexCache.Dexes, pkmn)
-		}
-	}
-
-	// Serialize cache
-	entry, err := json.MarshalIndent(dexCache, "", " ")
+// WriteCache serializes localCache and writes it to the file matching FileName,
+// creating it if not exists.
+func WriteCache() error {
+	entry, err := json.MarshalIndent(localCache, "", " ")
 	if err != nil {
 		return err
 	}
 
 	// Write back to file
-	err = os.WriteFile(filepath.Join(FileName), entry, 0644)
+	err = os.WriteFile(FileName, entry, 0666)
 	return err
+}
+
+// DelCache wraps os.Remove, targeting the file matching FileName.
+func DelCache() error {
+	return os.Remove(FileName)
+}
+
+// updateCache edits localCache, changing the Pokedex matching pkmn.Id to pkmn,
+// or appending pkmn if not exists.
+func updateCache(pkmn Pokedex) {
+	for i, v := range localCache.Dexes {
+		if v.Id == pkmn.Id {
+			localCache.Dexes[i] = v
+			return
+		}
+	}
+	localCache.Dexes = append(localCache.Dexes, pkmn)
 }

@@ -22,52 +22,39 @@ var dexCmd = &cobra.Command{
 	Long: `This command will retrieve a list of newline-separated Pokemon names from
 the Pokedex matching the specified id.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// id, default 1
-
 		id, cacheOnly, override := getFlags(cmd)
-
-		if id < 1 {
-			_ = cmd.Help()
+		// set fetch location
+		location := dex.Web
+		if cacheOnly {
+			location = dex.Disk
+		}
+		// if override is true, cache result to dex internal
+		pkmn, err := dex.GetPokedexFrom(location, id, override)
+		if err != nil {
+			fmt.Printf("Trouble reading Pokédex:\n%s\n", err)
 			return
 		}
-
-		var pkdx dex.Pokedex
-		var err error
-
-		if cacheOnly {
-			pkdx, err = dex.GetPokedexFromCache(id, false)
-		} else {
-			pkdx, err = dex.GetPokedexFromCache(id, false)
-			// Redundant double fetch if in cache but this becomes very branchy very quick.
-			// TODO: Optimize this and avoid useless fs reads
-			if err != nil || override {
-				pkdx, err = dex.FetchPokedex(id)
+		// if override is true, result was cached, so write to disk
+		if override {
+			if err = dex.WriteCache(); err != nil {
+				fmt.Printf("Trouble writing Pokédex at id %d:\n%s\n", id, err)
+				return
 			}
 		}
-
-		// Return if any issues with getting the Pokédex
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		if override {
-			_ = dex.UpdateCache(pkdx)
-		}
-
-		printPokedex(pkdx)
+		// output
+		printPokedex(pkmn)
 	},
 }
 
-func printPokedex(pkdx dex.Pokedex) {
+func printPokedex(pkmn dex.Pokedex) {
 	s := strings.Builder{}
-	for _, v := range pkdx.Names {
+	for _, v := range pkmn.Names {
 		s.WriteString(fmt.Sprintf("%s\n", v))
 	}
 	fmt.Println(s.String())
 }
 
-func getFlags(cmd *cobra.Command) (dex.ID, bool, bool) {
+func getFlags(cmd *cobra.Command) (int, bool, bool) {
 	// id, default 1
 	id, _ := cmd.PersistentFlags().GetInt(IdFlag)
 
@@ -79,13 +66,13 @@ func getFlags(cmd *cobra.Command) (dex.ID, bool, bool) {
 	override := false
 	override, _ = cmd.Flags().GetBool(overrideFlag)
 
-	return dex.ID(id), cacheOnly, override
+	return id, cacheOnly, override
 }
 
 func init() {
 	rootCmd.AddCommand(dexCmd)
 
-	dexCmd.PersistentFlags().IntP(
+	dexCmd.Flags().IntP(
 		IdFlag,
 		"i",
 		1,
