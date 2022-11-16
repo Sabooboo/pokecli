@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"math"
 	"net/http"
 	"strings"
 	"sync"
@@ -171,12 +170,18 @@ func Substring(str string, start, length int) string {
 	return string(whole[start : start+length])
 }
 
-func Min(a, b int) int {
-	return int(math.Min(float64(a), float64(b)))
+func Min[T int | float32 | float64](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
 }
 
-func Max(a, b int) int {
-	return int(math.Max(float64(a), float64(b)))
+func Max[T int | float32 | float64](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func Reverse[T any](a []T) []T {

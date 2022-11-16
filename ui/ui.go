@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"github.com/Sabooboo/pokecli/dex"
 	"github.com/Sabooboo/pokecli/util"
 	"os"
 	"time"
@@ -83,6 +84,7 @@ func (ui UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
+			_ = dex.WriteCache()
 			return ui, tea.Quit
 		}
 	case tea.WindowSizeMsg:
